@@ -27,4 +27,8 @@ fn main() -> tantivy::Resut<()> {
     io::stdin().read_line(&mut input).unwrap();
     let seeds: Vec<String> = input.trim().split(',').map(|s| s.trim().to_string()).collect();
 
+    for seed_url in seeds {
+        let doc = crawler::fetch_page(&seed_url);
+        indexer::index_document(&index, &doc)?;
+    }
 }
