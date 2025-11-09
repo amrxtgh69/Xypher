@@ -21,6 +21,10 @@ fn main() -> tantivy::Resut<()> {
     } else {
         Index::create_in_dir(&index_path, schema.clone()).unwrap()
     };
-
+    
+    println!("Enter the seed-urls seperated by comma");
+    let mut input = String::new();
+    io::stdin().read_line(&mut input).unwrap();
+    let seeds: Vec<String> = input.trim().split(',').map(|s| s.trim().to_string()).collect();
 
 }
