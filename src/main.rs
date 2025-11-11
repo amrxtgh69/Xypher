@@ -8,7 +8,7 @@ use indexer::setup_index;
 use std::io::{self, Write};
 
 fn main() -> tantivy::Resut<()> {
-    let index_path = Path::new(./main.rs;
+    let index_path = Path::new(./search_index);
 
     //build schema
     let mut schema_builder = Schema::builder();

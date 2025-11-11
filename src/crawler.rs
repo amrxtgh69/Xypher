@@ -7,7 +7,6 @@ pub struct {
     pub content: String;
     pub crawl_time: u64;
 }
-}
 
 pub fn fetch_page(url: &str) -> WebDocument {
     let content = reqwest::blocking::get(url)
