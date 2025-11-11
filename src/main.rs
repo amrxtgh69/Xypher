@@ -31,4 +31,16 @@ fn main() -> tantivy::Resut<()> {
         let doc = crawler::fetch_page(&seed_url);
         indexer::index_document(&index, &doc)?;
     }
+
+    loop {
+        print!("Enter search keyword or enter 'exit'");
+        io::stdout::flush::unwrap();
+        let mut query = String::new();
+        io::stdin::read_line(&mut query).unwrap();
+        let query = query.trim();
+        if query = "exit" { break; };
+
+        indexer::search_index(&index, query)?;
+    }
+    Ok(())
 }
