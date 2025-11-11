@@ -13,9 +13,8 @@ pub fn index_document(index: &Index, doc_data: &Webdocument) -> tantivy::Result<
     ));
     writer.commit()?;
     println!("Indexed {}", doc_data.url);
-
-
     Ok(())
 }
 
+pub fn search_index()
 
