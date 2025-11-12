@@ -1,0 +1,82 @@
+{
+  "index_settings": {
+    "docstore_compression": "lz4",
+    "docstore_blocksize": 16384
+  },
+  "segments": [
+    {
+      "segment_id": "80da6400-b4d5-407d-ae60-6dbda9cd05b8",
+      "max_doc": 1,
+      "deletes": null
+    },
+    {
+      "segment_id": "5d4ea1aa-089c-43dc-b74e-61099f22b2d7",
+      "max_doc": 1,
+      "deletes": null
+    },
+    {
+      "segment_id": "43460804-a364-41a0-a26c-4ab20b091aca",
+      "max_doc": 1,
+      "deletes": null
+    },
+    {
+      "segment_id": "e120a5b9-306d-4054-aa8f-743c44d7d149",
+      "max_doc": 1,
+      "deletes": null
+    },
+    {
+      "segment_id": "ce6e6466-7b61-404b-b496-a91352f2b4c1",
+      "max_doc": 1,
+      "deletes": null
+    },
+    {
+      "segment_id": "9658a052-32a9-4dff-8ffc-4e3fdbbd33b3",
+      "max_doc": 1,
+      "deletes": null
+    },
+    {
+      "segment_id": "16ac31bd-1f13-4b6a-b2a1-a1e0200bd512",
+      "max_doc": 1,
+      "deletes": null
+    },
+    {
+      "segment_id": "276989a9-64d4-4c00-8a4a-70cebbb991db",
+      "max_doc": 1,
+      "deletes": null
+    },
+    {
+      "segment_id": "95ab874a-57fc-46ab-88e3-30dc4ecf61ba",
+      "max_doc": 1,
+      "deletes": null
+    },
+    {
+      "segment_id": "13dbedb0-04b0-4599-8d7b-3c5b9f473dc8",
+      "max_doc": 1,
+      "deletes": null
+    }
+  ],
+  "schema": [
+    {
+      "name": "url",
+      "type": "text",
+      "options": {
+        "stored": true,
+        "fast": false
+      }
+    },
+    {
+      "name": "content",
+      "type": "text",
+      "options": {
+        "indexing": {
+          "record": "position",
+          "fieldnorms": true,
+          "tokenizer": "default"
+        },
+        "stored": true,
+        "fast": false
+      }
+    }
+  ],
+  "opstamp": 20
+}
