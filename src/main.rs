@@ -1,12 +1,27 @@
 mod crawler;
 mod indexer;
 
+use axum::{Router, routing::get, extract::Query, response:Html};
+use::std::sync::Arc;
 use std::path::Path;
 use tantivy::schema::*;
 use tantivy::{Index};
 use std::io::{self, Write};
+use serde::Deserialize;
+use tokyo::sync::Mutex;
 
-fn main() -> tantivy::Result<()> {
+#[derive(Clone)]
+struct AppState {
+    index: Arc<Mutex<Index>>,
+}
+
+#[derive(Deserialize)]
+struct SearchQuery {
+    q: option<String>,
+}
+
+#[tokyo::main]
+async fn main() -> anyhow::Result<()> {
     let index_path = Path::new("./search_index");
 
     //build schema
@@ -21,7 +36,18 @@ fn main() -> tantivy::Result<()> {
         std::fs::create_dir_all(index_path).unwrap();
         Index::create_in_dir(&index_path, schema.clone()).unwrap()
     };
-    
+
+    let shared_state = AppState {
+        index: Arc::new(Mutex::new(index)),
+    };
+
+    let app = Router::new()
+        .route("/", get(serve_home))
+        .route("/search", get(search_handler))
+        .with_state(shared_state);
+
+
+
     println!("Enter the seed-urls seperated by comma");
     let mut input = String::new();
     io::stdin().read_line(&mut input).unwrap();
