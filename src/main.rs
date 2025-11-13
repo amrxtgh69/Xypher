@@ -46,6 +46,8 @@ async fn main() -> anyhow::Result<()> {
         .route("/search", get(search_handler))
         .with_state(shared_state);
 
+    println!("Server listening on http://127.0.0.1:3000");
+    axum::serve(tokio::net::TcpListener::bind("127.0.0.1:3000"):)
 
 
     println!("Enter the seed-urls seperated by comma");
