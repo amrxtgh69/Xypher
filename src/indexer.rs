@@ -16,7 +16,14 @@ pub fn index_document(index: &Index, doc_data: &WebDocument) -> tantivy::Result<
     Ok(())
 }
 
-pub fn search_index(index: &Index, query_str: &str) -> tantivy::Result<()> {
+pub fn index_documents(index: &Index, docs:Vec<WebDocument>) -> tantivy::Result<()> {
+    for doc in docs {
+        index_document(index, &doc)?;
+    }
+    Ok(())
+}
+
+pub fn search_index(index: &Index, query_str: &str) -> tantivy::Result<Vec<String>> {
     let reader = index.reader()?;
     let searcher = reader.searcher();
     let schema = index.schema();
@@ -34,5 +41,5 @@ pub fn search_index(index: &Index, query_str: &str) -> tantivy::Result<()> {
             println!("Found url: {}", url_text);
         }
     }
-    Ok(())
+    Ok(vec![])
 }

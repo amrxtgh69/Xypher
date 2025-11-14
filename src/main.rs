@@ -1,14 +1,15 @@
 mod crawler;
 mod indexer;
+mod seeds;
 
-use axum::{Router, routing::get, extract::Query, response:Html};
+use axum::{Router, routing::get, extract::Query, response::Html};
 use::std::sync::Arc;
 use std::path::Path;
 use tantivy::schema::*;
 use tantivy::{Index};
 use std::io::{self, Write};
 use serde::Deserialize;
-use tokyo::sync::Mutex;
+use tokio::sync::Mutex;
 
 #[derive(Clone)]
 struct AppState {
@@ -17,10 +18,10 @@ struct AppState {
 
 #[derive(Deserialize)]
 struct SearchQuery {
-    q: option<String>,
+    q: Option<String>,
 }
 
-#[tokyo::main]
+#[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let index_path = Path::new("./search_index");
 
@@ -41,38 +42,42 @@ async fn main() -> anyhow::Result<()> {
         index: Arc::new(Mutex::new(index)),
     };
 
+    let seeds = seeds::get_seeds_urls();
+    let documents = crawler::crawl_seeds(seeds);
+    for doc in documents {
+        let mut ind_guard = shared_state.index.lock().await;
+        indexer::index_document(&mut *ind_guard, &doc);
+    }
+
     let app = Router::new()
         .route("/", get(serve_home))
         .route("/search", get(search_handler))
         .with_state(shared_state.clone());
 
     println!("Server listening on http://127.0.0.1:3000");
-    axum::Server::bind(&"127.0.0.1:3000".parse()?))
-        .serve(app.into_make_service())
-        .await?;
-
-        
-
-
-    println!("Enter the seed-urls seperated by comma");
-    let mut input = String::new();
-    io::stdin().read_line(&mut input).unwrap();
-    let seeds: Vec<String> = input.trim().split(',').map(|s| s.trim().to_string()).collect();
-
-    for seed_url in seeds {
-        let doc = crawler::fetch_page(&seed_url);
-        indexer::index_document(&index, &doc)?;
-    }
-
-    loop {
-        print!("Enter search keyword or enter 'exit'");
-        io::stdout().flush().unwrap();
-        let mut query = String::new();
-        io::stdin().read_line(&mut query).unwrap();
-        let query = query.trim();
-        if query == "exit" { break; };
-
-        indexer::search_index(&index, query)?;
-    }
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await?;
+    axum::serve(listener, app).await?;
     Ok(())
 }
+
+ async fn serve_home() -> Html<String> {
+    Html(std::fs::read_to_string("src/templates/index.html").unwrap())
+}
+
+async fn search_handler(Query(params): Query<SearchQuery>, axum::extract::State(state): axum::extract::State<AppState>) -> Html<String> {
+    let Some(query) = params.q else {
+        return Html("<h3>Please enter the query</h3>".into());
+    };
+
+    let index = state.index.lock().await;
+    let results = indexer::search_index(&index, &query).unwrap_or_else(|_| vec![]);
+    
+    let mut html = format!("<h2>Result for '{}'</h2>", query);
+    for url in results {
+        html.push_str(&format!("<p><a href='{}'>{}</a></p>", url, url));
+    }
+
+    Html(html)
+}
+
+

@@ -16,10 +16,15 @@ pub fn fetch_page(url: &str) -> WebDocument {
         .duration_since(UNIX_EPOCH)
         .unwrap()
         .as_secs();
+ 
     WebDocument {
         url: url.to_string(),
         content,
         crawl_time,
     }
     //TODO: async for parallel crawling
+}
+
+pub fn crawl_seeds(seeds: Vec<&str>) -> Vec<WebDocument> {
+    seeds.into_iter().map(|url| fetch_page(url)).collect()
 }
