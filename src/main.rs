@@ -46,7 +46,7 @@ async fn main() -> anyhow::Result<()> {
     let documents = crawler::crawl_seeds(seeds);
     for doc in documents {
         let mut ind_guard = shared_state.index.lock().await;
-        indexer::index_document(&mut *ind_guard, &doc);
+        let _ indexer::index_document(&mut *ind_guard, &doc);
     }
 
     let app = Router::new()
