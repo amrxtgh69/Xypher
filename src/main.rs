@@ -44,10 +44,14 @@ async fn main() -> anyhow::Result<()> {
     let app = Router::new()
         .route("/", get(serve_home))
         .route("/search", get(search_handler))
-        .with_state(shared_state);
+        .with_state(shared_state.clone());
 
     println!("Server listening on http://127.0.0.1:3000");
-    axum::serve(tokio::net::TcpListener::bind("127.0.0.1:3000"):)
+    axum::Server::bind(&"127.0.0.1:3000".parse()?))
+        .serve(app.into_make_service())
+        .await?;
+
+        
 
 
     println!("Enter the seed-urls seperated by comma");
