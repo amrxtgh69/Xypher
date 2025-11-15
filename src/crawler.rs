@@ -25,6 +25,6 @@ pub fn fetch_page(url: &str) -> WebDocument {
     //TODO: async for parallel crawling
 }
 
-pub fn crawl_seeds(seeds: Vec<&str>) -> Vec<WebDocument> {
+pub async fn crawl_seeds(seeds: Vec<&str>) -> Vec<WebDocument> {
     seeds.into_iter().map(|url| fetch_page(url)).collect()
 }
