@@ -26,20 +26,22 @@ pub fn index_documents(index: &Index, docs:Vec<WebDocument>) -> tantivy::Result<
 pub fn search_index(index: &Index, query_str: &str) -> tantivy::Result<Vec<String>> {
     let reader = index.reader()?;
     let searcher = reader.searcher();
+
     let schema = index.schema();
     let url_field = schema.get_field("url").unwrap();
     let content_field = schema.get_field("content").unwrap();
+    
     let query_parser = tantivy::query::QueryParser::for_index(&index, vec![url_field, content_field]);
     let query = query_parser.parse_query(query_str)?;
+    
     let top_docs = searcher.search(&query, &tantivy::collector::TopDocs::with_limit(10))?;
     
-    println!("Top results");
+    let mut results = vec![];
     for (_score, doc_address) in top_docs {
-        let retrieved_doc: tantivy::TantivyDocument = searcher.doc(doc_address)?;
+        let retrieved_doc = searcher.doc(doc_address)?;
         if let Some(url_value) = retrieved_doc.get_first(url_field) {
-            let url_text = url_value.as_str().unwrap_or("N/A");
-            println!("Found url: {}", url_text);
+            results::push(url_val.text().unwrap().to_string());
         }
     }
-    Ok(vec![])
+    Ok(results)
 }
