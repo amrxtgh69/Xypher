@@ -7,7 +7,6 @@ use::std::sync::Arc;
 use std::path::Path;
 use tantivy::schema::*;
 use tantivy::{Index};
-use std::io::{self, Write};
 use serde::Deserialize;
 use tokio::sync::Mutex;
 
@@ -41,9 +40,10 @@ async fn main() -> anyhow::Result<()> {
     let shared_state = AppState {
         index: Arc::new(Mutex::new(index)),
     };
-
+    println!("Starting crawl...");
     let seeds = seeds::get_seeds_urls();
-    let documents = crawler::crawl_seeds(seeds);
+    let documents = crawler::crawl_seeds(seeds).await;
+    println!("Finished crawl, got {} numbers of documents", documents.len());
     for doc in documents {
         let mut ind_guard = shared_state.index.lock().await;
         let _ = indexer::index_document(&mut *ind_guard, &doc);

@@ -2,7 +2,6 @@ use tantivy::{Index, doc};
 use tantivy::schema::Value;
 use crate::crawler::WebDocument;
 use tantivy::TantivyDocument;
-use crate::document::ReferenceValue;
 
 pub fn index_document(index: &Index, doc_data: &WebDocument) -> tantivy::Result<()> {
     let schema = index.schema();
