@@ -38,9 +38,9 @@ pub fn search_index(index: &Index, query_str: &str) -> tantivy::Result<Vec<Strin
     
     let mut results = vec![];
     for (_score, doc_address) in top_docs {
-        let retrieved_doc = searcher.doc(doc_address)?;
+        let retrieved_doc: tantivy::schema::OwnedDocument = searcher.doc(doc_address)?;
         if let Some(url_value) = retrieved_doc.get_first(url_field) {
-            results::push(url_val.text().unwrap().to_string());
+            results.push(url_val.text().unwrap().to_string());
         }
     }
     Ok(results)
