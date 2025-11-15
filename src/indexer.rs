@@ -2,6 +2,7 @@ use tantivy::{Index, doc};
 use tantivy::schema::Value;
 use crate::crawler::WebDocument;
 use tantivy::TantivyDocument;
+use crate::document::ReferenceValue;
 
 pub fn index_document(index: &Index, doc_data: &WebDocument) -> tantivy::Result<()> {
     let schema = index.schema();
@@ -40,8 +41,9 @@ pub fn search_index(index: &Index, query_str: &str) -> tantivy::Result<Vec<Strin
     let mut results = vec![];
     for (_score, doc_address) in top_docs {
         let retrieved_doc: TantivyDocument = searcher.doc(doc_address)?;
-        if let Some(url_val) = retrieved_doc.get_first(url_field) {
-            results.push(url_val.text().unwrap().to_string());
+        if let Some(text) = retrieved_doc.get_first(url_field)
+            .and_then(|v| v.as_str()) {
+            results.push(text.to_string());
         }
     }
     Ok(results)
