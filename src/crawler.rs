@@ -81,5 +81,10 @@ pub fn fetch_page(client: &Client, url: &str) -> WebDocument {
 pub async fn crawl_seeds(seeds: Vec<&str>) -> Vec<WebDocument> {
     let client = Client::new();
     
+    let mut tasks = vec::new();
+
+    for url in seeds {
+
+    }
     seeds.into_iter().map(|url| fetch_page(url)).collect()
 }
