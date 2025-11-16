@@ -3,7 +3,12 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 pub struct WebDocument {
     pub url: String,
+    pub title: Option(String),
     pub content: String,
+    pub favicon: Option<String>,
+    pub links: Vec<String>,
+    pub images: Vec<String>,
+    pub videos: Vec<String>,
     pub crawl_time: u64,
 }
 
