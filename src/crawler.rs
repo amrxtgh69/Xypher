@@ -1,90 +1,64 @@
-use reqwest;
-use std::time::{SystemTime, UNIX_EPOCH};
+use anyhow::Ok;
+use reqwest::Client;
+use scraper::{Html, Selector};
 
-pub struct WebDocument {
-    pub url: String,
-    pub title: Option(String),
-    pub content: String,
-    pub favicon: Option<String>,
-    pub links: Vec<String>,
-    pub images: Vec<String>,
-    pub videos: Vec<String>,
-    pub crawl_time: u64,
-}
+use crate::models::WebDocument;
 
-pub fn fetch_page(client: &Client, url: &str) -> WebDocument {
-    let resp = client::get(url).send().await;
-    let text = resp
-        .and_then(|r| r.text().await)
-        .unwrap_or_else(|_| "".to_string());
 
-    let doc = Html::parse_document(&text);
+pub async fn crawl_url(url: &str) -> anyhow::Result<WebDocument> {
+    let client = Client::new();
 
-    let title_selector = Selector::parse("title").unwrap();
-    let link_selector = Selector::parse("a").unwrap();
-    let img_selector = Selector::parse("img").unwrap();
-    let video_selector = Selector::parse("vide").unwrap();
-    let favicon_selector = Selector::parse("Link[rel!=\"icon\"]").wnwrap();
+    let res = client.get(url).send().await?;
+    let body = res.text().await?;
+
+    let doc = Html::parse_document(&body);
+
 
     //Extract title
     let title = doc
-        .select(&title_selector)
+        .select(&Selector::parse("title").unwrap())
         .next()
-        .map(|e| e.inner_html());
+        .map(|x| x.text().collect::<String>());
     
     //Extract favicon
     let favicon = doc 
-        .select(&favicon_selector)
+        .select(&Selector::parse("link[rel=\"icon\"]").unwrap())
         .next()
         .and_then(|e| e.value().attr("href"))
         .map(|s| s.to_string());
-                
+            
+    
+    let text = doc.root_element().text().collect::<String>();
     //Extract links
     let links = doc
-        .select(&link_selector)
+        .select(&Selector::parse("a").unwrap())
         .filter_map(|a| a.value().attr("href"))
         .map(|s| s.to_string())
-        .collect::<vec<_>>();
+        .collect::<Vec<_>>();
 
     //Extract images
     let images = doc
-        .select(&img_selectr)
+        .select(&Selector::parse("img").unwrap())
         .filter_map(|a| a.value().attr("src"))
         .map(|s| s.to_string())
-        .collect::<vec<_>>();
+        .collect::<Vec<_>>();
 
     //Extract videos
     let videos = doc
-        .select(&video_selector)
+        .select(&Selector::parse("videos").unwrap())
         .filter_map(|v| v.value().attr("src"))
         .map(|s| s.to_string())
-        .collect::<vec<_>>();
-    
-    let crawl_time = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_secs();
+        .collect::<Vec<_>>();
  
 
-    WebDocument {
+    Ok(WebDocument {
         url: url.to_string(),
         title,
-        content: text,
+        text,
         favicon,
         links,
         images,
         videos,
-        crawl_time,
-    }
-}
+    })
+   }
 
-pub async fn crawl_seeds(seeds: Vec<&str>) -> Vec<WebDocument> {
-    let client = Client::new();
-    
-    let mut tasks = vec::new();
-
-    for url in seeds {
-
-    }
-    seeds.into_iter().map(|url| fetch_page(url)).collect()
-}
