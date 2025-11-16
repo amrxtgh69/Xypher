@@ -1,49 +1,49 @@
-use tantivy::{Index, doc};
-use tantivy::schema::Value;
-use crate::crawler::WebDocument;
-use tantivy::TantivyDocument;
+use anyhow::Result;
+use tantivy::{
+    Document, Index, schema::{STORED, STRING, Schema, SchemaBuilder, TEXT}
+};
+use crate::models::WebDocument;
 
-pub fn index_document(index: &Index, doc_data: &WebDocument) -> tantivy::Result<()> {
-    let schema = index.schema();
-    let url_field = schema.get_field("url").unwrap();
-    let content_field = schema.get_field("content").unwrap();
-    let mut writer = index.writer(50_000_000)?;
-    writer.add_document(doc!(
-        url_field => doc_data.url.clone(),
-        content_field => doc_data.content.clone()
-    ))?;
-    writer.commit()?;
-    println!("Indexed {}", doc_data.url);
-    Ok(())
+pub struct Indexer {
+    index: Index,
 }
 
-pub fn index_documents(index: &Index, docs:Vec<WebDocument>) -> tantivy::Result<()> {
-    for doc in docs {
-        index_document(index, &doc)?;
+impl Indexer {
+    pub fn new() -> Self {
+        let mut schema_builder = Schema::builder();
+        let url = schema_builder.add_text_field("url", STRING | STORED);
+
+        let title = schema_builder.add_text_field("title", TEXT | STORED);
+        let text = schema_builder.add_text_field("text", TEXT);
+        let favicon = schema_builder.add_text_field("favicon", STORED);
+
+        let images = schema_builder.add_text_field("images", STORED);
+        let videos = schema_builder.add_text_field("videos", STORED); 
+
+        let schema = schema_builder.build();
+        let index = Index::create_in_dir("./tantivy_index", schema.clone()).unwrap();
+
+        Self { index }
     }
-    Ok(())
-}
 
-pub fn search_index(index: &Index, query_str: &str) -> tantivy::Result<Vec<String>> {
-    let reader = index.reader()?;
-    let searcher = reader.searcher();
+    pub fn add(&self, doc: WebDocument) -> Result<()> {
+        let schema = self.index.schema();
+        let mut writer = self.index.writer(50_000_000)?;
 
-    let schema = index.schema();
-    let url_field = schema.get_field("url").unwrap();
-    let content_field = schema.get_field("content").unwrap();
-    
-    let query_parser = tantivy::query::QueryParser::for_index(&index, vec![url_field, content_field]);
-    let query = query_parser.parse_query(query_str)?;
-    
-    let top_docs = searcher.search(&query, &tantivy::collector::TopDocs::with_limit(10))?;
-    
-    let mut results = vec![];
-    for (_score, doc_address) in top_docs {
-        let retrieved_doc: TantivyDocument = searcher.doc(doc_address)?;
-        if let Some(text) = retrieved_doc.get_first(url_field)
-            .and_then(|v| v.as_str()) {
-            results.push(text.to_string());
-        }
+        let mut d = Document::default();
+        d.add_text(schema.get_field("url").unwrap(), doc.url);
+
+        if let Some(t) = doc.title { d.add_text(schema.get_field("title").unwrap(), t); }
+        if let Some(f) = doc.favicon { d.add_tex(schema.get_field("favicon").unwrap(), f); }
+        
+        d.add_text(schema.get_field("text").unwrap(), doc.text);
+
+        d.add_text(schema.get_field("images").unwrap(), serde_json::to_string(&doc.images)?);
+        d.add_text(schema.get_field("videos").unwrap(), serde_json::to_string(&doc.videos)?);
+
+        writer.add_document(d);
+        writer.commit()?;
+        Ok(())
     }
-    Ok(results)
 }
+
