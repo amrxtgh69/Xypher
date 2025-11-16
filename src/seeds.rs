@@ -1,45 +1,8 @@
-pub fn get_seeds_urls() -> Vec<&'static str> {
-    vec![
-        "https://hashnode.com",
-        "https://rustacean.net",
-        "https://tokio.rs",
-        "https://actix.rs",
-        "https://bevyengine.org",
-        "https://servo.org",
-        "https://mozilla.org",
-        "https://openai.com",
-        "https://huggingface.co",
-        "https://pytorch.org",
-        "https://tensorflow.org",
-        "https://kaggle.com",
-        "https://machinelearningmastery.com",
-        "https://fast.ai",
-        "https://deeplearning.ai",
-        "https://ai.google",
-        "https://meta.ai",
-        "https://anthropic.com",
-        "https://microsoft.com",
-        "https://azure.microsoft.com",
-        "https://aws.amazon.com",
-        "https://cloud.google.com",
-        "https://docker.com",
-        "https://kubernetes.io",
-        "https://helm.sh",
-        "https://nginx.org",
-        "https://apache.org",
-        "https://mysql.com",
-        "https://postgresql.org",
-        "https://sqlite.org",
-        "https://redis.io",
-        "https://mongodb.com",
-        "https://cassandra.apache.org",
-        "https://elastic.co",
-        "https://grafana.com",
-        "https://prometheus.io",
-        "https://terraform.io",
-        "https://securelist.com",
-        "https://pornhub.com",
-        "https://owasp.org"
-    ]
+pub fn get_seeds_urls() -> Vec<String> {
+    std::fs::read_to_string("seeds.txt")
+        .unwrap()
+        .lines()
+        .map(|s| s.to_string())
+        .collect()
 }
 
