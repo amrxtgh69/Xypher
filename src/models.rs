@@ -1,6 +1,6 @@
 use serde::{Serialize, Deserialize};
 
-#[derive( Deserialize, Debug, Clone)]
+#[derive( Deserialize, Serialize, Debug, Clone)]
 pub struct WebDocument {
     pub url: String,
     pub title: Option<String>,
