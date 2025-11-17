@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use anyhow::Result;
 use tantivy::{
     Index, schema::{STORED, STRING, Schema, TEXT}
@@ -21,7 +23,14 @@ impl Indexer {
         let _videos = schema_builder.add_text_field("videos", STORED); 
 
         let schema = schema_builder.build();
-        let index = Index::create_in_dir("./tantivy_index", schema.clone()).unwrap();
+        let index_path = Path::new("./tantivy.index");
+
+        let index = if index_path.exists() && index_path.read_dir().unwrap().next().is_some() {
+            Index::open_in_dir(index_path).unwrap()
+        } else {
+            std::fs::create_dir_all(index_path).unwrap();
+            Index::create_in_dir(index_path, schema).unwrap()
+        };
 
         Self { index }
     }
@@ -35,7 +44,7 @@ impl Indexer {
 
         if let Some(t) = doc.title { d.add_text(schema.get_field("title").unwrap(), t); }
         if let Some(f) = doc.favicon { d.add_text(schema.get_field("favicon").unwrap(), f); }
-        
+    
         d.add_text(schema.get_field("text").unwrap(), doc.text);
 
         d.add_text(schema.get_field("images").unwrap(), serde_json::to_string(&doc.images)?);
