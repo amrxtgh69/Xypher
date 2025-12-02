@@ -1,4 +1,4 @@
-pub fn get_seeds_urls() -> Vec<String> {
+fn get_seeds_urls() -> Vec<String> {
     std::fs::read_to_string("seeds.txt")
         .unwrap()
         .lines()
